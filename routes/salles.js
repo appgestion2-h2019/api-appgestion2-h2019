@@ -6,14 +6,21 @@ var router = express.Router();
 /*-------------------- ÉTIENNE------------*/
 /*----------------------------------------*/
 
+/**
+ * TODO: 
+ * Obtention des salles sans filtre
+ * Création des salles
+ */
+
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+  res.send('Obtention des salles à venir.');
 });
 
-router.post();
-
+router.post('/', function(req, res, next){
+  res.send("Création d'une salle.");
+});
 
 /*----------------------------------------*/
 /*-------------------- JULIEN-------------*/
