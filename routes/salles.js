@@ -21,34 +21,43 @@ var ObjectId = require('mongodb').ObjectID;
  /**
   * Obtient toutes les salles disponibles dans 
   * la base de données.
+  * Promise : asynchronisme de la base de données.
   * @author Étienne Bouchard
+  * @returns Un tableau de salle (peut être vide) ou une erreur si la connexion
+  * à la base de données est impossible.  
   */
- async function obtenirSalles() {
-  MongoClient.connect(url, function (err, client) {
-    assert.equal(null, err);
-    console.log("Connected to the server.");
-    const db = client.db(dbName);
+ var obtenirSalles = () => {
+  return new Promise((resolve, reject) => {
 
-    db.collection("salles").find().toArray(function (err, result) {
-        if (err) return console.log(err)
-        client.close();
-        return result;
+    MongoClient.connect(url, function (err, client) {
+      assert.equal(null, err);
+      const db = client.db(dbName);
+  
+      db.collection("salles").find().toArray(function (erreur, salles) {
+          err ? reject(erreur) : resolve(salles);
+      });
     });
+
   });
- }
+};
 
 /**
  * Obtenir les salles sans aucun filtre appliqué
+ * Fonction asynchrone car attend la réponse de la base de données avant 
+ * de retourner du data.
  * @author Étienne Bouchard
  */
 router.get('/', async function(req, res, next) {
-  var salles = await obtenirSalles();
-  res.json(salles);
+  await obtenirSalles().then((data) => {
+    res.json(data);
+  });
 });
 
 /**
 * Création d'une salle 
 * Paramètres requis : Nom, type et propriétaire de la salle
+* Si aucun type de salle est fournis, le type par défaut est 
+* appliqué.
 * @author Étienne Bouchard
 */
 router.post('/', function(req, res, next){
