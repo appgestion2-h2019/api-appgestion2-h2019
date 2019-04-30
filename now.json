@@ -1,5 +1,4 @@
 {
-  "scripts": {
-    "now-build": "node ./bin/www.js"
-  }
+  "version": 1,
+  "builds": [{ "src": "bin/www.js", "use": "@now/node" }]
 }
