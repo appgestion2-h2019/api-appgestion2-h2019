@@ -81,11 +81,15 @@ router.post('/', function(req, res, next){
 
 router.get('/filtre', (req, res) => {
 	let filtres = ['min', 'max', 'type', 'langue'];
-	let parametres = Object.keys(req.query);
+	let urlParametres = Object.keys(req.query);
+	let parametres = [];
 
-	if(parametres.length !== 0) {
-		if(parametres.some(valeur => filtres.indexOf(valeur) >= 0)) {
-			res.end('ok');
+	if(urlParametres.length !== 0) {
+		if(urlParametres.some(valeur => filtres.indexOf(valeur) >= 0)) {
+			parametres = urlParametres.filter((valeur) => {
+				return filtres.indexOf(valeur) !== -1;
+			})
+			res.json(parametres);
 		} else {
 			res.end('not ok');
 		}
