@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "now-build": "node ./bin/www.js"
+  }
+}
