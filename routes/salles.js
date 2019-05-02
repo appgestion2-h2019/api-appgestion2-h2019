@@ -95,16 +95,69 @@ router.get('/filtre', (req, res) => {
 
 	if(urlParametres.length !== 0) {
 		if(urlParametres.some(valeur => filtres.indexOf(valeur) >= 0)) {
+			//	Ajouter a l'array les parametres qui font partie de ceux permis
 			parametres = urlParametres.filter((valeur) => {
 				return filtres.indexOf(valeur) !== -1;
 			})
-			res.json(parametres);
+
+			let filtre = {}
+
+			//	Ajout des valeurs des parametres au filtre pour la requête
+			parametres.map((valeur) => {
+				filtre[valeur] = req.query[valeur]
+			})
+
+			//	Get des salles avec le filtre
+			getSallesFiltre(filtre)
+			.then((data) => {
+				res.send(data)
+			})
+			.catch((err) => {
+				res.send(err)
+			})
 		} else {
-			res.end('not ok');
+			//	Les parametres ne font pas partie des parametres permis
+			obtenirSalles().then((data) => {
+				res.send(data)
+			})
 		}
 	} else {
-		res.end('not ok');
+		//	Aucun parametre n'a ete fourni
+		obtenirSalles().then((data) => {
+			res.send(data)
+		})
 	}
 });
+
+const getSallesFiltre = (filtre) => {
+	return new Promise((resolve, reject) => {
+		//	Connexion à la DB
+		MongoClient.connect(url, function (err, client) {
+			assert.equal(null, err);
+			const db = client.db(dbName);
+
+			//	Si les options du filtre ne sont pas définies, mettre les options les plus globales possible
+			if(filtre.langage === undefined) {
+				filtre.langue = "Français";
+			} if(filtre.type === undefined) {
+				filtre.type = "défaut";
+			} if(filtre.min === undefined) {
+				filtre.min = 0;
+			} if(filtre.max === undefined || filtre.max === "-1") {
+				filtre.max = 9999999;
+			}
+
+			console.log(filtre)
+
+			//	Query avec les options du filtre
+			db.collection("salles").find({ "utilisateurs_min": {$gte:  parseInt(filtre.min)}, "utilisateurs_max": {$lte: parseInt(filtre.max)}, "type.nom": filtre.type, "langue": filtre.langue }).toArray().then((data) => {
+				resolve(data);
+			})
+			.catch((err) => {
+				reject(err);
+			})
+		});
+	})
+}
 
 module.exports = router;
