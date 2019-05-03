@@ -3,7 +3,7 @@ var router = express.Router();
 
 var express = require('express');
 var router = express.Router();
-var config = require('../../config');
+var config = require('../config');
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const url = config.database.uri;
