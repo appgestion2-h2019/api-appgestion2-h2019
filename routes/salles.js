@@ -12,6 +12,13 @@ var ObjectId = require('mongodb').ObjectID;
 /*-------------------- ÉTIENNE------------*/
 /*----------------------------------------*/
 
+router.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
+
 /**
  * TODO: 
  * Obtention des salles sans filtre
