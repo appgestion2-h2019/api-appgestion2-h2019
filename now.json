@@ -1,0 +1,7 @@
+{
+    "version": 2,
+    "name": "api-appgestion2-h2019",
+    "builds": [
+        { "src": "**/*.js", "use": "@now/node" }
+    ]
+}
