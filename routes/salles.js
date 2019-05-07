@@ -140,18 +140,61 @@ router.get('/filtre', (req, res) => {
 	}
 });
 
+router.put('/:id', (req, res) => {
+	if(req.params.id === undefined || req.params.id === null || req.body === {} || req.body === undefined || typeof req.body !== typeof new Object()) {
+		res.sendStatus(400);
+	} else {
+		//	Connexion à la DB
+		MongoClient.connect(url, function (err, client) {
+			assert.equal(null, err);
+			const db = client.db(dbName);
+
+			if(req.body._id === undefined || req.body._id === null) {
+				res.sendStatus(400)
+			} else {
+				req.body._id = ObjectId(req.body._id);
+			}
+
+			db.collection('salles').replaceOne({ _id: ObjectId(req.params.id) }, req.body)
+			.then((result) => {
+				res.sendStatus(200);
+			})
+			.catch((reason) => {
+				console.log(reason);
+				res.end(reason);
+			})
+		});
+	}
+});
+
 /**
  * Supprime la salle
  * @author Julien Ferluc
  */
 router.delete('/:id', (req, res) => {
-	//	Retourne 501 puisque la route n'est pas implémentéee
-	res.sendStatus(501);
+	if(req.params.id === undefined || req.params.id === null) {
+		res.sendStatus(400);
+	} else {
+		//	Connexion à la DB
+		MongoClient.connect(url, function (err, client) {
+			assert.equal(null, err);
+			const db = client.db(dbName);
+
+			db.collection('salles').deleteOne({ _id: ObjectId(req.params.id)})
+			.then((result) => {
+				res.sendStatus(200);
+			})
+			.catch((reason) => {
+				console.log(reason);
+				res.end(reason);
+			})
+		});
+	}
 })
 
 /**
  * Retourne la liste des salles correspondant aux filtres
- * @param {{ min: number, max: number, type: String, langue: String}} filtre 
+ * @param {{ min: number, max: number, type: String, langue: String }} filtre 
  * @author Julien Ferluc
  * @returns {Promise} Les données des salles
  */
