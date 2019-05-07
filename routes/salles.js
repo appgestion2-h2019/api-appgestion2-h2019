@@ -88,6 +88,10 @@ router.post('/', function(req, res, next){
 /*-------------------- JULIEN-------------*/
 /*----------------------------------------*/
 
+/**
+ * Retourne les salles selon les filtres donnés et permis
+ * @author Julien Ferluc
+ */
 router.get('/filtre', (req, res) => {
 	let filtres = ['min', 'max', 'type', 'langue'];
 	let urlParametres = Object.keys(req.query);
@@ -104,31 +108,46 @@ router.get('/filtre', (req, res) => {
 
 			//	Ajout des valeurs des parametres au filtre pour la requête
 			parametres.map((valeur) => {
-				filtre[valeur] = req.query[valeur]
+				filtre[valeur] = req.query[valeur];
 			})
 
 			//	Get des salles avec le filtre
 			getSallesFiltre(filtre)
 			.then((data) => {
-				res.send(data)
+				res.send(data);
 			})
 			.catch((err) => {
-				res.send(err)
+				res.send(err);
 			})
 		} else {
 			//	Les parametres ne font pas partie des parametres permis
 			obtenirSalles().then((data) => {
-				res.send(data)
+				res.send(data);
 			})
 		}
 	} else {
 		//	Aucun parametre n'a ete fourni
 		obtenirSalles().then((data) => {
-			res.send(data)
+			res.send(data);
 		})
 	}
 });
 
+/**
+ * Supprime la salle
+ * @author Julien Ferluc
+ */
+router.delete('/:id', (req, res) => {
+	//	Retourne 501 puisque la route n'est pas implémentéee
+	res.sendStatus(501);
+})
+
+/**
+ * Retourne la liste des salles correspondant aux filtres
+ * @param {{ min: number, max: number, type: String, langue: String}} filtre 
+ * @author Julien Ferluc
+ * @returns {Promise} Les données des salles
+ */
 const getSallesFiltre = (filtre) => {
 	return new Promise((resolve, reject) => {
 		//	Connexion à la DB
