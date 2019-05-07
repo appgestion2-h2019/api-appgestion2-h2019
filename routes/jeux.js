@@ -80,5 +80,19 @@ router.put('/:idUsager', function(req, res, next) {
  * Modifier les niveaux de difficulté des mots proposés.
  *
  */
+//Requête pour obetnir les nom de catégories
+router.get('/', function(req, res, next) {
+    MongoClient.connect(url, function(err, client) {
+        assert.equal(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('categories').find().toArray(function(err, result) {
+            if (err) return console.log(err)
+            console.log(result);
+            res.json(result);
+        })
+        client.close();
+    });
+});
 
 module.exports = router;
