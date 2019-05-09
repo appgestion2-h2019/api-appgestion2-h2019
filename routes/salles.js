@@ -12,6 +12,13 @@ var ObjectId = require('mongodb').ObjectID;
 /*-------------------- ÉTIENNE------------*/
 /*----------------------------------------*/
 
+router.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
+
 /**
  * TODO: 
  * Obtention des salles sans filtre
@@ -88,6 +95,10 @@ router.post('/', function(req, res, next){
 /*-------------------- JULIEN-------------*/
 /*----------------------------------------*/
 
+/**
+ * Retourne les salles selon les filtres donnés et permis
+ * @author Julien Ferluc
+ */
 router.get('/filtre', (req, res) => {
 	let filtres = ['min', 'max', 'type', 'langue'];
 	let urlParametres = Object.keys(req.query);
@@ -95,16 +106,127 @@ router.get('/filtre', (req, res) => {
 
 	if(urlParametres.length !== 0) {
 		if(urlParametres.some(valeur => filtres.indexOf(valeur) >= 0)) {
+			//	Ajouter a l'array les parametres qui font partie de ceux permis
 			parametres = urlParametres.filter((valeur) => {
 				return filtres.indexOf(valeur) !== -1;
 			})
-			res.json(parametres);
+
+			let filtre = {}
+
+			//	Ajout des valeurs des parametres au filtre pour la requête
+			parametres.map((valeur) => {
+				filtre[valeur] = req.query[valeur];
+			})
+
+			//	Get des salles avec le filtre
+			getSallesFiltre(filtre)
+			.then((data) => {
+				res.send(data);
+			})
+			.catch((err) => {
+				res.send(err);
+			})
 		} else {
-			res.end('not ok');
+			//	Les parametres ne font pas partie des parametres permis
+			obtenirSalles().then((data) => {
+				res.send(data);
+			})
 		}
 	} else {
-		res.end('not ok');
+		//	Aucun parametre n'a ete fourni
+		obtenirSalles().then((data) => {
+			res.send(data);
+		})
 	}
 });
+
+router.put('/:id', (req, res) => {
+	if(req.params.id === undefined || req.params.id === null || req.body === {} || req.body === undefined || typeof req.body !== typeof new Object()) {
+		res.sendStatus(400);
+	} else {
+		//	Connexion à la DB
+		MongoClient.connect(url, function (err, client) {
+			assert.equal(null, err);
+			const db = client.db(dbName);
+
+			if(req.body._id === undefined || req.body._id === null) {
+				res.sendStatus(400)
+			} else {
+				req.body._id = ObjectId(req.body._id);
+			}
+
+			db.collection('salles').replaceOne({ _id: ObjectId(req.params.id) }, req.body)
+			.then((result) => {
+				res.sendStatus(200);
+			})
+			.catch((reason) => {
+				console.log(reason);
+				res.end(reason);
+			})
+		});
+	}
+});
+
+/**
+ * Supprime la salle
+ * @author Julien Ferluc
+ */
+router.delete('/:id', (req, res) => {
+	if(req.params.id === undefined || req.params.id === null) {
+		res.sendStatus(400);
+	} else {
+		//	Connexion à la DB
+		MongoClient.connect(url, function (err, client) {
+			assert.equal(null, err);
+			const db = client.db(dbName);
+
+			db.collection('salles').deleteOne({ _id: ObjectId(req.params.id)})
+			.then((result) => {
+				res.sendStatus(200);
+			})
+			.catch((reason) => {
+				console.log(reason);
+				res.end(reason);
+			})
+		});
+	}
+})
+
+/**
+ * Retourne la liste des salles correspondant aux filtres
+ * @param {{ min: number, max: number, type: String, langue: String }} filtre 
+ * @author Julien Ferluc
+ * @returns {Promise} Les données des salles
+ */
+const getSallesFiltre = (filtre) => {
+	return new Promise((resolve, reject) => {
+		//	Connexion à la DB
+		MongoClient.connect(url, function (err, client) {
+			assert.equal(null, err);
+			const db = client.db(dbName);
+
+			//	Si les options du filtre ne sont pas définies, mettre les options les plus globales possible
+			if(filtre.langage === undefined) {
+				filtre.langue = "Français";
+			} if(filtre.type === undefined) {
+				filtre.type = "défaut";
+			} if(filtre.min === undefined) {
+				filtre.min = 0;
+			} if(filtre.max === undefined || filtre.max === "-1") {
+				filtre.max = 9999999;
+			}
+
+			console.log(filtre)
+
+			//	Query avec les options du filtre
+			db.collection("salles").find({ "utilisateurs_min": {$gte:  parseInt(filtre.min)}, "utilisateurs_max": {$lte: parseInt(filtre.max)}, "type.nom": filtre.type, "langue": filtre.langue }).toArray().then((data) => {
+				resolve(data);
+			})
+			.catch((err) => {
+				reject(err);
+			})
+		});
+	})
+}
 
 module.exports = router;
