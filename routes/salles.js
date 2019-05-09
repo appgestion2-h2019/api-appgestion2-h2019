@@ -12,6 +12,11 @@ var ObjectId = require('mongodb').ObjectID;
 /*-------------------- ÉTIENNE------------*/
 /*----------------------------------------*/
 
+/**
+ * Permet l'accès à l'API à partir d'un autre nom de domaine.
+ * CORS
+ * @author Étienne Bouchard
+ */
 router.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -47,6 +52,41 @@ router.use(function(req, res, next) {
 
   });
 };
+
+/**
+ * Obtient une salle avec un id spécifié.
+ * Ne passe pas pas la fonction de filtre car cas 
+ * spécifique utilisé fréquemment par l'équipe message
+ * 
+ * @param {*} id _ObjectID() de la salle
+ * @author Étienne Bouchard
+ * @returns Une salle ou une erreur
+ */
+var obtenirUneSalle = (id) => {
+	return new Promise((resolve, reject) => {
+		MongoClient.connect(url, function (err, client) {
+      assert.equal(null, err);
+      const db = client.db(dbName);
+  
+      db.collection("salles").findOne({ _id: ObjectId.createFromHexString(id) }, function (erreur, salles) {
+          err ? reject(erreur) : resolve(salles);
+      });
+    });
+	});
+}
+
+/**
+ * Obtient une salle à un id donné
+ * Fonction asynchrone car attend la réponse de la base de données avant 
+ * de retourner du data.
+ * @author Étienne Bouchard
+ */
+router.get('/:salleID', async function(req, res, next) {
+	console.log(req.params.salleID);
+  await obtenirUneSalle(req.params.salleID).then((data) => {
+    res.json(data);
+  });
+});
 
 /**
  * Obtenir les salles sans aucun filtre appliqué
