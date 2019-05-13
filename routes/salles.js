@@ -91,7 +91,7 @@ router.get('/:salleID', async function(req, res, next) {
 	console.log(req.params.salleID);
   await obtenirUneSalle(req.params.salleID).then((data) => {
     res.json(data);
-  }).reject((raison) => {
+  }).catch((raison) => {
 		res.json({"erreur": "Un problème est survenu lors de la connexion avec la base de données.", "raison" : raison });
 	});
 });
@@ -105,7 +105,7 @@ router.get('/:salleID', async function(req, res, next) {
 router.get('/', async function(req, res, next) {
   await obtenirSalles().then((data) => {
     res.json(data);
-	}).reject((raison) => {
+	}).catch((raison) => {
 		res.json({"erreur": "Un problème est survenu lors de la connexion avec la base de données.", "raison" : raison });
 	});
 });
