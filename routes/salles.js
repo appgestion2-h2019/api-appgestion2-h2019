@@ -42,12 +42,15 @@ router.use(function(req, res, next) {
   return new Promise((resolve, reject) => {
 
     MongoClient.connect(url, function (err, client) {
-      assert.equal(null, err);
-      const db = client.db(dbName);
+      if (err == null) {
+				const db = client.db(dbName);
   
-      db.collection("salles").find().toArray(function (erreur, salles) {
-          err ? reject(erreur) : resolve(salles);
-      });
+				db.collection("salles").find().toArray(function (erreur, salles) {
+						err ? reject(erreur) : resolve(salles);
+				});
+			} else {
+				reject(err);
+			}
     });
 
   });
@@ -65,12 +68,15 @@ router.use(function(req, res, next) {
 var obtenirUneSalle = (id) => {
 	return new Promise((resolve, reject) => {
 		MongoClient.connect(url, function (err, client) {
-      assert.equal(null, err);
-      const db = client.db(dbName);
+      if (err == null) {
+				const db = client.db(dbName);
   
-      db.collection("salles").findOne({ _id: ObjectId.createFromHexString(id) }, function (erreur, salles) {
-          err ? reject(erreur) : resolve(salles);
-      });
+      	db.collection("salles").findOne({ _id: ObjectId.createFromHexString(id) }, function (erreur, salles) {
+         err ? reject(erreur) : resolve(salles);
+     		});
+			} else {
+				reject(err);
+			}
     });
 	});
 }
@@ -85,7 +91,9 @@ router.get('/:salleID', async function(req, res, next) {
 	console.log(req.params.salleID);
   await obtenirUneSalle(req.params.salleID).then((data) => {
     res.json(data);
-  });
+  }).reject((raison) => {
+		res.json({"erreur": "Un problème est survenu lors de la connexion avec la base de données.", "raison" : raison });
+	});
 });
 
 /**
@@ -97,7 +105,9 @@ router.get('/:salleID', async function(req, res, next) {
 router.get('/', async function(req, res, next) {
   await obtenirSalles().then((data) => {
     res.json(data);
-  });
+	}).reject((raison) => {
+		res.json({"erreur": "Un problème est survenu lors de la connexion avec la base de données.", "raison" : raison });
+	});
 });
 
 /**
@@ -112,7 +122,7 @@ router.post('/', function(req, res, next){
   if (!salle.nom || !salle.langue || !salle.proprietaire) {
       res.status(400);
       console.log(salle.nom);
-      res.json({"erreur": "Champs manquants. Veuillez vous référer à la documentation." + salle.nom});
+      res.json({"erreur": "Champs manquants. Veuillez vous référer à la documentation." + salle.proprietaire});
   } else {
 
       if (!salle.type) {
