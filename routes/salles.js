@@ -25,29 +25,34 @@ router.use(function(req, res, next) {
 
 
 /**
- * TODO: 
+ * TODO:
  * Obtention des salles sans filtre
  * Création des salles
  */
 
  /**
-  * Obtient toutes les salles disponibles dans 
+  * Obtient toutes les salles disponibles dans
   * la base de données.
   * Promise : asynchronisme de la base de données.
   * @author Étienne Bouchard
   * @returns Un tableau de salle (peut être vide) ou une erreur si la connexion
-  * à la base de données est impossible.  
+  * à la base de données est impossible.
   */
  var obtenirSalles = () => {
   return new Promise((resolve, reject) => {
 
     MongoClient.connect(url, function (err, client) {
-      assert.equal(null, err);
-      const db = client.db(dbName);
-  
-      db.collection("salles").find().toArray(function (erreur, salles) {
-          err ? reject(erreur) : resolve(salles);
-      });
+      if (err == null) {
+				const db = client.db(dbName);
+
+				db.collection("salles").find().toArray(function (erreur, salles) {
+					client.close();
+					err ? reject(erreur) : resolve(salles);
+				});
+			} else {
+				client.close();
+				reject(err);
+			}
     });
 
   });
@@ -55,9 +60,9 @@ router.use(function(req, res, next) {
 
 /**
  * Obtient une salle avec un id spécifié.
- * Ne passe pas pas la fonction de filtre car cas 
+ * Ne passe pas pas la fonction de filtre car cas
  * spécifique utilisé fréquemment par l'équipe message
- * 
+ *
  * @param {*} id _ObjectID() de la salle
  * @author Étienne Bouchard
  * @returns Une salle ou une erreur
@@ -65,45 +70,54 @@ router.use(function(req, res, next) {
 var obtenirUneSalle = (id) => {
 	return new Promise((resolve, reject) => {
 		MongoClient.connect(url, function (err, client) {
-      assert.equal(null, err);
-      const db = client.db(dbName);
-  
-      db.collection("salles").findOne({ _id: ObjectId.createFromHexString(id) }, function (erreur, salles) {
-          err ? reject(erreur) : resolve(salles);
-      });
+      if (err == null) {
+				const db = client.db(dbName);
+
+      	db.collection("salles").findOne({ _id: ObjectId.createFromHexString(id) }, function (erreur, salles) {
+				client.close();
+         err ? reject(erreur) : resolve(salles);
+     		});
+			} else {
+				client.close();
+				reject(err);
+			}
     });
 	});
 }
 
 /**
  * Obtient une salle à un id donné
- * Fonction asynchrone car attend la réponse de la base de données avant 
+ * Fonction asynchrone car attend la réponse de la base de données avant
  * de retourner du data.
  * @author Étienne Bouchard
  */
-router.get('/:salleID', async function(req, res, next) {
+router.get('/unique/:salleID', async function(req, res, next) {
 	console.log(req.params.salleID);
   await obtenirUneSalle(req.params.salleID).then((data) => {
     res.json(data);
-  });
+  }).catch((raison) => {
+		res.json({"erreur": "Un problème est survenu lors de la connexion avec la base de données.", "raison" : raison });
+	});
 });
 
 /**
  * Obtenir les salles sans aucun filtre appliqué
- * Fonction asynchrone car attend la réponse de la base de données avant 
+ * Fonction asynchrone car attend la réponse de la base de données avant
  * de retourner du data.
  * @author Étienne Bouchard
  */
 router.get('/', async function(req, res, next) {
   await obtenirSalles().then((data) => {
     res.json(data);
-  });
+	}).catch((raison) => {
+		res.json({"erreur": "Un problème est survenu lors de la connexion avec la base de données.", "raison" : raison });
+	});
 });
 
 /**
-* Création d'une salle 
+* Création d'une salle
 * Paramètres requis : Nom, type et propriétaire de la salle
-* Si aucun type de salle est fournis, le type par défaut est 
+* Si aucun type de salle est fournis, le type par défaut est
 * appliqué.
 * @author Étienne Bouchard
 */
@@ -112,7 +126,7 @@ router.post('/', function(req, res, next){
   if (!salle.nom || !salle.langue || !salle.proprietaire) {
       res.status(400);
       console.log(salle.nom);
-      res.json({"erreur": "Champs manquants. Veuillez vous référer à la documentation." + salle.nom});
+      res.json({"erreur": "Champs manquants. Veuillez vous référer à la documentation." + salle.proprietaire});
   } else {
 
       if (!salle.type) {
@@ -170,13 +184,13 @@ router.get('/filtre', (req, res) => {
 			//	Les parametres ne font pas partie des parametres permis
 			obtenirSalles().then((data) => {
 				res.send(data);
-			})
+			});
 		}
 	} else {
 		//	Aucun parametre n'a ete fourni
 		obtenirSalles().then((data) => {
 			res.send(data);
-		})
+		});
 	}
 });
 
@@ -230,11 +244,13 @@ router.delete('/:id', (req, res) => {
 			})
 		});
 	}
-})
+});
+
+
 
 /**
  * Retourne la liste des salles correspondant aux filtres
- * @param {{ min: number, max: number, type: String, langue: String }} filtre 
+ * @param {{ min: number, max: number, type: String, langue: String }} filtre
  * @author Julien Ferluc
  * @returns {Promise} Les données des salles
  */
@@ -267,6 +283,64 @@ const getSallesFiltre = (filtre) => {
 			})
 		});
 	})
-}
+};
+
+/*----------------------------------------*/
+/*-------------------- Michael------------*/
+/*----------------------------------------*/
+router.post("/initialisationMessage/", (req, res) => {
+    if (req.body.salleId === undefined || req.body.salleId === null) {
+        res.json({"code": 400});
+    } else {
+        MongoClient.connect(url, function (err, client) {
+            assert.equal(null, err);
+            const db = client.db(dbName);
+            db.collection("salles").updateOne({_id: ObjectId(req.body.salleId)}, {$set: {"messages": []}}).then((result) => {
+                res.json({"code": 200});
+                console.log(result);
+            }).catch((reason => {
+                console.log(reason);
+                res.json({"code": reason});
+            }));
+            client.close();
+        });
+    }
+
+});
+
+router.post("/ajouterMessage", (req, res) => {
+	var currentdate = new Date();
+	var datetime = currentdate.getDate() + "/"
+		+ (currentdate.getMonth() + 1) + "/"
+		+ currentdate.getFullYear() + " "
+		+ currentdate.getHours() + ":"
+		+ currentdate.getMinutes() + ":"
+		+ currentdate.getSeconds();
+	if (req.body.salleId === undefined || req.body.salleId === null) {
+		res.json({"code": 400});
+	} else {
+		MongoClient.connect(url, function (err, client) {
+			assert.equal(null, err);
+			const db = client.db(dbName);
+			db.collection("salles").updateOne({_id: ObjectId(req.body.salleId)}, {
+				$push: {
+					"messages": {
+						"texte": req.body.texte,
+						"picto": req.body.picto,
+						"date": datetime,
+						"utilisateur_id": req.body.utilisateur_id
+					}
+				}
+			}).then((result) => {
+				res.json({"code": 200});
+				console.log(result);
+			}).catch((reason => {
+				console.log(reason);
+				res.json({"code": reason});
+			}));
+			client.close();
+		});
+	}
+});
 
 module.exports = router;
