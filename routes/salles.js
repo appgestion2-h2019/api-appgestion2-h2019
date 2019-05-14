@@ -91,7 +91,7 @@ var obtenirUneSalle = (id) => {
  * de retourner du data.
  * @author Étienne Bouchard
  */
-router.get('/:salleID', async function(req, res, next) {
+router.get('/unique/:salleID', async function(req, res, next) {
 	console.log(req.params.salleID);
   await obtenirUneSalle(req.params.salleID).then((data) => {
     res.json(data);
@@ -184,13 +184,13 @@ router.get('/filtre', (req, res) => {
 			//	Les parametres ne font pas partie des parametres permis
 			obtenirSalles().then((data) => {
 				res.send(data);
-			})
+			});
 		}
 	} else {
 		//	Aucun parametre n'a ete fourni
 		obtenirSalles().then((data) => {
 			res.send(data);
-		})
+		});
 	}
 });
 
