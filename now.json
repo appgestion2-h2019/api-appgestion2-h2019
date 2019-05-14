@@ -3,6 +3,14 @@
     "name": "api-appgestion2-h2019",
     "builds": [
         { "src": "**/*.js", "use": "@now/node" },
-        { "src": "bin/*.js", "use": "@now/node" }
+        { "src": "routes/*.js", "use": "@now/node" }
+    ],
+    "routes": [
+        { "src": "/.*", "dest": "/" },
+        { "src": ".*", "headers":
+		  {
+			"Access-Control-Allow-Origin": "*"
+		  }
+		}
     ]
 }
