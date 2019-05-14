@@ -46,9 +46,11 @@ router.use(function(req, res, next) {
 				const db = client.db(dbName);
   
 				db.collection("salles").find().toArray(function (erreur, salles) {
-						err ? reject(erreur) : resolve(salles);
+					client.close();
+					err ? reject(erreur) : resolve(salles);
 				});
 			} else {
+				client.close();
 				reject(err);
 			}
     });
@@ -72,9 +74,11 @@ var obtenirUneSalle = (id) => {
 				const db = client.db(dbName);
   
       	db.collection("salles").findOne({ _id: ObjectId.createFromHexString(id) }, function (erreur, salles) {
+				client.close();
          err ? reject(erreur) : resolve(salles);
      		});
 			} else {
+				client.close();
 				reject(err);
 			}
     });
