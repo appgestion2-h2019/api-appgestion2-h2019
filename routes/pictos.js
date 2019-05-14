@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-
+// Configuration de la connection a la base de donné
 var config = require('../config');
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
