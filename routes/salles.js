@@ -25,18 +25,18 @@ router.use(function(req, res, next) {
 
 
 /**
- * TODO: 
+ * TODO:
  * Obtention des salles sans filtre
  * Création des salles
  */
 
  /**
-  * Obtient toutes les salles disponibles dans 
+  * Obtient toutes les salles disponibles dans
   * la base de données.
   * Promise : asynchronisme de la base de données.
   * @author Étienne Bouchard
   * @returns Un tableau de salle (peut être vide) ou une erreur si la connexion
-  * à la base de données est impossible.  
+  * à la base de données est impossible.
   */
  var obtenirSalles = () => {
   return new Promise((resolve, reject) => {
@@ -44,7 +44,7 @@ router.use(function(req, res, next) {
     MongoClient.connect(url, function (err, client) {
       if (err == null) {
 				const db = client.db(dbName);
-  
+
 				db.collection("salles").find().toArray(function (erreur, salles) {
 					client.close();
 					err ? reject(erreur) : resolve(salles);
@@ -60,9 +60,9 @@ router.use(function(req, res, next) {
 
 /**
  * Obtient une salle avec un id spécifié.
- * Ne passe pas pas la fonction de filtre car cas 
+ * Ne passe pas pas la fonction de filtre car cas
  * spécifique utilisé fréquemment par l'équipe message
- * 
+ *
  * @param {*} id _ObjectID() de la salle
  * @author Étienne Bouchard
  * @returns Une salle ou une erreur
@@ -72,7 +72,7 @@ var obtenirUneSalle = (id) => {
 		MongoClient.connect(url, function (err, client) {
       if (err == null) {
 				const db = client.db(dbName);
-  
+
       	db.collection("salles").findOne({ _id: ObjectId.createFromHexString(id) }, function (erreur, salles) {
 				client.close();
          err ? reject(erreur) : resolve(salles);
@@ -87,7 +87,7 @@ var obtenirUneSalle = (id) => {
 
 /**
  * Obtient une salle à un id donné
- * Fonction asynchrone car attend la réponse de la base de données avant 
+ * Fonction asynchrone car attend la réponse de la base de données avant
  * de retourner du data.
  * @author Étienne Bouchard
  */
@@ -102,7 +102,7 @@ router.get('/:salleID', async function(req, res, next) {
 
 /**
  * Obtenir les salles sans aucun filtre appliqué
- * Fonction asynchrone car attend la réponse de la base de données avant 
+ * Fonction asynchrone car attend la réponse de la base de données avant
  * de retourner du data.
  * @author Étienne Bouchard
  */
@@ -115,9 +115,9 @@ router.get('/', async function(req, res, next) {
 });
 
 /**
-* Création d'une salle 
+* Création d'une salle
 * Paramètres requis : Nom, type et propriétaire de la salle
-* Si aucun type de salle est fournis, le type par défaut est 
+* Si aucun type de salle est fournis, le type par défaut est
 * appliqué.
 * @author Étienne Bouchard
 */
@@ -244,11 +244,33 @@ router.delete('/:id', (req, res) => {
 			})
 		});
 	}
-})
+});
+
+/*----------------------------------------*/
+/*-------------------- Michael-------------*/
+/*----------------------------------------*/
+router.post("/initialisationMessage/:id", (req, res) => {
+    if (req.params.id === undefined || req.params.id === null) {
+        res.sendStatus(400);
+    } else {
+        MongoClient.connect(url, function (err, client) {
+            assert.equal(null, err);
+            const db = client.db(dbName);
+            db.collection("salles").updateOne({_id: ObjectId(req.params.id)}, {$set: {"messages": []}}).then((result) => {
+                res.sendStatus(200);
+                console.log(result);
+            }).catch((reason => {
+                console.log(reason);
+                res.end(reason);
+            }));
+        });
+    }
+
+});
 
 /**
  * Retourne la liste des salles correspondant aux filtres
- * @param {{ min: number, max: number, type: String, langue: String }} filtre 
+ * @param {{ min: number, max: number, type: String, langue: String }} filtre
  * @author Julien Ferluc
  * @returns {Promise} Les données des salles
  */
@@ -281,6 +303,8 @@ const getSallesFiltre = (filtre) => {
 			})
 		});
 	})
-}
+};
+
+
 
 module.exports = router;
