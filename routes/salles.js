@@ -246,27 +246,7 @@ router.delete('/:id', (req, res) => {
 	}
 });
 
-/*----------------------------------------*/
-/*-------------------- Michael-------------*/
-/*----------------------------------------*/
-router.post("/initialisationMessage/:id", (req, res) => {
-    if (req.params.id === undefined || req.params.id === null) {
-        res.sendStatus(400);
-    } else {
-        MongoClient.connect(url, function (err, client) {
-            assert.equal(null, err);
-            const db = client.db(dbName);
-            db.collection("salles").updateOne({_id: ObjectId(req.params.id)}, {$set: {"messages": []}}).then((result) => {
-                res.sendStatus(200);
-                console.log(result);
-            }).catch((reason => {
-                console.log(reason);
-                res.end(reason);
-            }));
-        });
-    }
 
-});
 
 /**
  * Retourne la liste des salles correspondant aux filtres
@@ -305,6 +285,62 @@ const getSallesFiltre = (filtre) => {
 	})
 };
 
+/*----------------------------------------*/
+/*-------------------- Michael------------*/
+/*----------------------------------------*/
+router.post("/initialisationMessage/", (req, res) => {
+    if (req.body.salleId === undefined || req.body.salleId === null) {
+        res.json({"code": 400});
+    } else {
+        MongoClient.connect(url, function (err, client) {
+            assert.equal(null, err);
+            const db = client.db(dbName);
+            db.collection("salles").updateOne({_id: ObjectId(req.body.salleId)}, {$set: {"messages": []}}).then((result) => {
+                res.json({"code": 200});
+                console.log(result);
+            }).catch((reason => {
+                console.log(reason);
+                res.json({"code": reason});
+            }));
+            client.close();
+        });
+    }
 
+});
+
+router.post("/ajouterMessage", (req, res) => {
+	var currentdate = new Date();
+	var datetime = currentdate.getDate() + "/"
+		+ (currentdate.getMonth() + 1) + "/"
+		+ currentdate.getFullYear() + " "
+		+ currentdate.getHours() + ":"
+		+ currentdate.getMinutes() + ":"
+		+ currentdate.getSeconds();
+	if (req.body.salleId === undefined || req.body.salleId === null) {
+		res.json({"code": 400});
+	} else {
+		MongoClient.connect(url, function (err, client) {
+			assert.equal(null, err);
+			const db = client.db(dbName);
+			db.collection("salles").updateOne({_id: ObjectId(req.body.salleId)}, {
+				$push: {
+					"messages": {
+						"texte": req.body.texte,
+						"picto": req.body.picto,
+						"date": datetime,
+						"utilisateur_id": req.body.utilisateur_id
+					}
+				}
+			}).then((result) => {
+				res.json({"code": 200});
+				console.log(result);
+			}).catch((reason => {
+				console.log(reason);
+				res.json({"code": reason});
+			}));
+			client.close();
+		});
+	}
+});
 
 module.exports = router;
