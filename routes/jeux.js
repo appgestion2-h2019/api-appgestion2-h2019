@@ -70,6 +70,27 @@ router.put('/:idUsager', function(req, res, next) {
  * Création de catégories (CREATE)
  *
  */
+router.post('/', function(req, res, next){
+    var categorie= req.body;
+    console.log(categorie);
+    if(!categorie.titre) {
+        res.status(400);
+        res.json({"erreur" : "Données incorrectes"});
+    } else {
+        MongoClient.connect(url, function(err, client) {
+            assert.equal(null, err);
+            console.log("Connexion au serveur réussie");
+            const db = client.db(dbName);
+            db.collection('categories').insertOne(categorie, function(err, result) {
+                if (err) return console.log(err)
+                console.log("Catégorie ajoutée");
+                res.json(result);
+            })
+            client.close();
+        });
+    }
+});
+
 
 
 /*------------ Marc-Antoine ------------*/
