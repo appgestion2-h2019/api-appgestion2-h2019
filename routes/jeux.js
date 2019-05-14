@@ -7,11 +7,7 @@ const url = config.database.uri;
 const dbName = 'chickencoops';
 var ObjectId = require('mongodb').ObjectID;
 
-router.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
+
 /*------------ Lisa ------------*/
 
 /**
@@ -38,7 +34,7 @@ router.use(function(req, res, next) {
 //     });
 // });
 
-//Requête pour la modification de la table 'usagers' et ajouter un score à l'utilisateur.
+//Requête pour la modification de la table 'scores' et ajouter un score à l'utilisateur en ligne dans une salle de type jeu.
 router.put('/:idUsager', function(req, res, next) {
     console.log("Mise à jour du score");
 
@@ -62,6 +58,7 @@ router.put('/:idUsager', function(req, res, next) {
         client.close();
     });
 });
+
 
 /*------------ Sacha ------------*/
 
