@@ -260,13 +260,13 @@ const getSallesFiltre = (filtre) => {
 			const db = client.db(dbName);
 
 			//	Si les options du filtre ne sont pas définies, mettre les options les plus globales possible
-			if(filtre.langage === undefined) {
+			if(filtre.langage === undefined || filtre.langage === 'null') {
 				filtre.langue = "Français";
-			} if(filtre.type === undefined) {
+			} if(filtre.type === undefined || filtre.type === '') {
 				filtre.type = "défaut";
-			} if(filtre.min === undefined) {
+			} if(filtre.min === undefined  || filtre.min === 'null') {
 				filtre.min = 0;
-			} if(filtre.max === undefined || filtre.max === "-1") {
+			} if(filtre.max === undefined || filtre.max === "-1" || filtre.max === 'null') {
 				filtre.max = 9999999;
 			}
 
