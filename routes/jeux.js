@@ -26,8 +26,7 @@ router.get('/', function(req, res, next) {
         client.close();
     });
 });
-
-//Ajouter un nouveau score dans la base de données.
+ //Ajouter un nouveau score dans la base de données.
 router.post('/score', function(req, res, next) {
     console.log("Ajouter un score");
     var objectScore = req.body;
