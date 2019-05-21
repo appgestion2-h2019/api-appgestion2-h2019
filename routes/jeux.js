@@ -27,6 +27,32 @@ router.get('/', function(req, res, next) {
     });
 });
 
+<<<<<<< HEAD
+//Modification d'une categorie pour supprimer un mot
+router.put('/:idCategorie', function (req, res, next) {
+    console.log('Suppression d\'un mot');
+
+    var idCategorie = req.params.idCategorie;
+    console.log(idCategorie);
+
+    var nomMot = req.body.nomMot;
+    console.log(nomMot);
+
+    MongoClient.connect(url, function (err, client) {
+        assert.equal(null, err);
+        console.log("Connexion au serveur réussie.");
+        const db = client.db(dbName);
+        db.collection('categories').updateOne({_id: ObjectId.createFromHexString(idCategorie)},
+            {$pull: {mot: {nom: nomMot}}}, function (err, result) {
+                if(err) return console.log(err);
+                console.log("Le mot a été retiré de la catégorie.");
+                res.json(result);
+            });
+        client.close();
+    });
+});
+
+=======
  //Ajouter un nouveau score dans la base de données.
 router.post('/score', function(req, res, next) {
     console.log("Ajouter un score");
@@ -55,6 +81,7 @@ router.post('/score', function(req, res, next) {
         });
     }
 });
+>>>>>>> a5d75702e230094dcea87ed21ff132d1ce62c321
 
 /*------------ Sacha ------------*/
 
