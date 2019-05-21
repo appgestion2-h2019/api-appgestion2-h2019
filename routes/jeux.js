@@ -67,6 +67,7 @@ router.post('/score', function(req, res, next) {
  *
  */
 router.post('/', function(req, res, next){
+    console.log("test");
     var categorie= req.body;
     console.log(categorie);
     if(!categorie.titre) {
@@ -104,7 +105,7 @@ router.get('/', function(req, res, next) {
         assert.equal(null, err);
         console.log("Connexion au serveur réussie");
         const db = client.db(dbName);
-        db.collection('categories').find().toArray(function(err, result) {
+        db.collection('categories').find().sort({titre:1}).toArray(function(err, result) {
             if (err) return console.log(err)
             console.log(result);
             res.json(result);
@@ -150,6 +151,22 @@ router.put('/:idCategorie', function(req, res, next){
         });
     }
 });
+router.delete('/:idCategorie', function(req, res, next){
+    MongoClient.connect(url, function(err, client) {
+        assert.equal(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('categories').deleteOne({_id: ObjectId.createFromHexString(req.params.idCategorie)},
+            function(err, result) {
+                if (err) return console.log(err)
+                console.log("categorie supprimée");
+                res.json(result);
+            })
+
+        client.close();
+    });
+});
+
 
 
 module.exports = router;
