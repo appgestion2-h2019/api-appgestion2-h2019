@@ -10,55 +10,24 @@ var ObjectId = require('mongodb').ObjectID;
 
 /*------------ Lisa ------------*/
 
-/**
- * TODO:
- * Obtention des dessins pour affichage à la fin du jeu.(READ)
- * Mise à jour des scores. (UPDATE)
- */
-//Requête pour l'affichage des pictos/dessins faits pendant la période de jeu.
-// router.get('/', function(req, res, next) {
-//     MongoClient.connect(url, function(err, client) {
-//         assert.equal(null, err);
-//         console.log("Connexion au serveur réussie");
-//         const db = client.db(dbName);
-//
-//         //TODO mettre la collection picto
-//         db.collection('METTRE LA COLLECTION DE PICTO').find().toArray(function(err, result) {
-//
-//             if (err) return console.log(err)
-//             console.log(result);
-//             res.json(result);
-//         })
-//
-//         client.close();
-//     });
-// });
-
-//Requête pour la modification de la table 'scores' et ajouter un score à l'utilisateur en ligne dans une salle de type jeu.
-router.put('/:idUsager', function(req, res, next) {
-    console.log("Mise à jour du score");
-
-    var idUsager = req.params.idUsager;
-    console.log(idUsager);
-
-    var objectScore = { score: req.body.score, usager_id: req.body.usager_id};
-    console.log(objectScore);
-
+// Requête pour l'affichage de tous les scores enregistrés dans la base de données.
+router.get('/tableauscore', function(req, res, next) {
     MongoClient.connect(url, function(err, client) {
         assert.equal(null, err);
         console.log("Connexion au serveur réussie");
         const db = client.db(dbName);
-        db.collection('scores').updateOne({_id: ObjectId.createFromHexString(idUsager)},
-            {$set : objectScore}, function(err, result) {
-                if (err) return console.log(err)
-                console.log("Le score est à jour!");
-                res.json(result);
-            })
+        db.collection('score').find().sort({score:-1}).toArray(function(err, result) {
+
+            if (err) return console.log(err)
+            console.log(result);
+            res.json(result);
+        })
 
         client.close();
     });
 });
 
+<<<<<<< HEAD
 //Modification d'une categorie pour supprimer un mot
 router.put('/:idCategorie', function (req, res, next) {
     console.log('Suppression d\'un mot');
@@ -83,6 +52,35 @@ router.put('/:idCategorie', function (req, res, next) {
     });
 });
 
+=======
+ //Ajouter un nouveau score dans la base de données.
+router.post('/score', function(req, res, next) {
+    console.log("Ajouter un score");
+    var objectScore = req.body;
+    console.log(objectScore);
+
+    //Validation
+    if(!objectScore.score){
+        res.status(400);
+        console.log('Valeur introuvable.');
+        res.json({Erreur: "Vous n'avez entré aucune donnée pour spécifier le score."});
+
+    } else{
+        MongoClient.connect(url, function(err, client) {
+            assert.equal(null, err);
+            console.log("Connexion au serveur réussie");
+            const db = client.db(dbName);
+            db.collection('score').insertOne(objectScore), function(err, result) {
+                if (err) return console.log(err)
+                console.log("Score ajouté");
+                res.json(result);
+            }
+
+            client.close();
+        });
+    }
+});
+>>>>>>> a5d75702e230094dcea87ed21ff132d1ce62c321
 
 /*------------ Sacha ------------*/
 
@@ -95,6 +93,7 @@ router.put('/:idCategorie', function (req, res, next) {
  *
  */
 router.post('/', function(req, res, next){
+    console.log("test");
     var categorie= req.body;
     console.log(categorie);
     if(!categorie.titre) {
@@ -126,13 +125,13 @@ router.post('/', function(req, res, next){
  * Modifier les niveaux de difficulté des mots proposés.
  *
  */
-//Requête pour obetnir les nom de catégories
+//Requête pour obetnir les informations sur les catégories
 router.get('/', function(req, res, next) {
     MongoClient.connect(url, function(err, client) {
         assert.equal(null, err);
         console.log("Connexion au serveur réussie");
         const db = client.db(dbName);
-        db.collection('categories').find().toArray(function(err, result) {
+        db.collection('categories').find().sort({titre:1}).toArray(function(err, result) {
             if (err) return console.log(err)
             console.log(result);
             res.json(result);
@@ -140,5 +139,60 @@ router.get('/', function(req, res, next) {
         client.close();
     });
 });
+//Requête pour get une catégorie selon son id
+router.get('/:idCategorie', function(req, res, next){
+    MongoClient.connect(url, function(err, client) {
+        assert.equal(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('categories').findOne({_id: ObjectId.createFromHexString(req.params.id)}, function(err, result) {
+            if (err) return console.log(err)
+            console.log(result);
+            res.json(result);
+        })
+
+        client.close();
+    });
+});
+
+//Requête pour ajouter un mot
+router.put('/:idCategorie', function(req, res, next){
+    var categorie = req.body;
+    if(!categorie.titre || (!(categorie.niveau))) {
+        res.status(400);
+        res.json({"erreur" : "Données incorrectes"});
+    } else {
+        MongoClient.connect(url, function(err, client) {
+            assert.equal(null, err);
+            console.log("Connexion au serveur réussie");
+            const db = client.db(dbName);
+            db.collection('categories').updateOne({_id: ObjectId.createFromHexString(req.params.idCategorie)}, {$set : categorie},
+                function(err, result) {
+                    if (err) return console.log(err)
+                    console.log("Mot ajouté");
+                    res.json(result);
+                })
+
+            client.close();
+        });
+    }
+});
+router.delete('/:idCategorie', function(req, res, next){
+    MongoClient.connect(url, function(err, client) {
+        assert.equal(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('categories').deleteOne({_id: ObjectId.createFromHexString(req.params.idCategorie)},
+            function(err, result) {
+                if (err) return console.log(err)
+                console.log("categorie supprimée");
+                res.json(result);
+            })
+
+        client.close();
+    });
+});
+
+
 
 module.exports = router;
