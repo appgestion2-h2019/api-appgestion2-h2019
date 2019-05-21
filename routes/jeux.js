@@ -11,7 +11,7 @@ var ObjectId = require('mongodb').ObjectID;
 /*------------ Lisa ------------*/
 
 // Requête pour l'affichage de tous les scores enregistrés dans la base de données.
-router.get('/tableauscore', function(req, res, next) {
+router.get('/', function(req, res, next) {
     MongoClient.connect(url, function(err, client) {
         assert.equal(null, err);
         console.log("Connexion au serveur réussie");
@@ -32,6 +32,7 @@ router.post('/score', function(req, res, next) {
     console.log("Ajouter un score");
     var objectScore = req.body;
     console.log(objectScore);
+    //TODO PARSE EN INT MON OBJET DE SCORE AVANT L'AJOUT
 
     //Validation
     if(!objectScore.score){
