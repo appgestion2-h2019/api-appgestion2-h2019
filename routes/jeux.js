@@ -11,7 +11,7 @@ var ObjectId = require('mongodb').ObjectID;
 /*------------ Lisa ------------*/
 
 // Requête pour l'affichage de tous les scores enregistrés dans la base de données.
-router.get('/', function(req, res, next) {
+router.get('/tableauscore', function(req, res, next) {
     MongoClient.connect(url, function(err, client) {
         assert.equal(null, err);
         console.log("Connexion au serveur réussie");
@@ -26,24 +26,33 @@ router.get('/', function(req, res, next) {
         client.close();
     });
 });
+
  //Ajouter un nouveau score dans la base de données.
 router.post('/score', function(req, res, next) {
     console.log("Ajouter un score");
     var objectScore = req.body;
     console.log(objectScore);
 
-    MongoClient.connect(url, function(err, client) {
-        assert.equal(null, err);
-        console.log("Connexion au serveur réussie");
-        const db = client.db(dbName);
-        db.collection('films').insertOne(objectScore), function(err, result) {
-            if (err) return console.log(err)
-            console.log("Film ajouté");
-            res.json(result);
-        }
+    //Validation
+    if(!objectScore.score){
+        res.status(400);
+        console.log('Valeur introuvable.');
+        res.json({Erreur: "Vous n'avez entré aucune donnée pour spécifier le score."});
 
-        client.close();
-    });
+    } else{
+        MongoClient.connect(url, function(err, client) {
+            assert.equal(null, err);
+            console.log("Connexion au serveur réussie");
+            const db = client.db(dbName);
+            db.collection('score').insertOne(objectScore), function(err, result) {
+                if (err) return console.log(err)
+                console.log("Score ajouté");
+                res.json(result);
+            }
+
+            client.close();
+        });
+    }
 });
 
 /*------------ Sacha ------------*/
