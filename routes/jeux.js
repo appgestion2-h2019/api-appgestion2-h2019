@@ -149,6 +149,22 @@ router.put('/:idCategorie', function(req, res, next){
         });
     }
 });
+router.delete('/:idCategorie', function(req, res, next){
+    MongoClient.connect(url, function(err, client) {
+        assert.equal(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('categories').deleteOne({_id: ObjectId.createFromHexString(req.params.idCategorie)},
+            function(err, result) {
+                if (err) return console.log(err)
+                console.log("categorie supprimée");
+                res.json(result);
+            })
+
+        client.close();
+    });
+});
+
 
 
 module.exports = router;
