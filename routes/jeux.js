@@ -102,6 +102,22 @@ router.get('/', function(req, res, next) {
         client.close();
     });
 });
+//Requête pour get une catégorie selon son id
+router.get('/:idCategorie', function(req, res, next){
+    MongoClient.connect(url, function(err, client) {
+        assert.equal(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('categories').findOne({_id: ObjectId.createFromHexString(req.params.id)}, function(err, result) {
+            if (err) return console.log(err)
+            console.log(result);
+            res.json(result);
+        })
+
+        client.close();
+    });
+});
+
 //Requête pour ajouter un mot
 router.put('/:idCategorie', function(req, res, next){
     var categorie = req.body;
