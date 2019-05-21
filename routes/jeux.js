@@ -88,7 +88,7 @@ router.post('/', function(req, res, next){
  * Modifier les niveaux de difficulté des mots proposés.
  *
  */
-//Requête pour obetnir les nom de catégories
+//Requête pour obetnir les informations sur les catégories
 router.get('/', function(req, res, next) {
     MongoClient.connect(url, function(err, client) {
         assert.equal(null, err);
@@ -102,5 +102,28 @@ router.get('/', function(req, res, next) {
         client.close();
     });
 });
+//Requête pour ajouter un mot
+router.put('/:idCategorie', function(req, res, next){
+    var categorie = req.body;
+    if(!categorie.titre || (!(categorie.niveau))) {
+        res.status(400);
+        res.json({"erreur" : "Données incorrectes"});
+    } else {
+        MongoClient.connect(url, function(err, client) {
+            assert.equal(null, err);
+            console.log("Connexion au serveur réussie");
+            const db = client.db(dbName);
+            db.collection('categories').updateOne({_id: ObjectId.createFromHexString(req.params.idCategorie)}, {$set : categorie},
+                function(err, result) {
+                    if (err) return console.log(err)
+                    console.log("Mot ajouté");
+                    res.json(result);
+                })
+
+            client.close();
+        });
+    }
+});
+
 
 module.exports = router;
