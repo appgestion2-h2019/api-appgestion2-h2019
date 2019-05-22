@@ -4,6 +4,12 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+
+// Express 4.0
+//ajout jp
+app.use(bodyParser.json({ limit: '105mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '105mb' }));
+
 var indexRouter = require('./routes/index');
 var utilisateur = require('./routes/usagers');
 var usersRouter = require('./routes/users');
