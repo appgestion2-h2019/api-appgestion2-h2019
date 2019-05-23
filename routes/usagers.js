@@ -31,20 +31,20 @@ router.get('/', function (req, res, next) {
 /**
  * Retourve l'usager par son id
  */
-router.get('/:idUsager', function (req, res, next) {
-    MongoClient.connect(url, function (err, client) {
-        assert.strictEqual(null, err);
-        console.log("Connexion au serveur réussie");
-        const db = client.db(dbName);
-        db.collection('usagers').findOne({_id: ObjectId.createFromHexString(req.params.idUsager)}, function (err, result) {
-            if (err) return console.log(err)
-            console.log(result);
-            res.json(result);
-        })
-
-        client.close();
-    });
-});
+// router.get('/:idUsager', function (req, res, next) {
+//     MongoClient.connect(url, function (err, client) {
+//         assert.strictEqual(null, err);
+//         console.log("Connexion au serveur réussie");
+//         const db = client.db(dbName);
+//         db.collection('usagers').findOne({_id: ObjectId.createFromHexString(req.params.idUsager)}, function (err, result) {
+//             if (err) return console.log(err)
+//             console.log(result);
+//             res.json(result);
+//         })
+//
+//         client.close();
+//     });
+// });
 
 /**
  * Enregistre le nouveau usager via création d'un compte avec courriel
@@ -140,4 +140,71 @@ router.delete('/:idUsager', function (req, res, next) {
 //     }
 // });
 
+/*----------------------------------------*/
+/*-------------------- Matthew------------*/
+/*----------------------------------------*/
+/**
+ * Enregistre le nouveau usager de google dans notre base de donnée
+ */
+router.post('/usagergoogle/', function (req, res, next) {
+    var usager = req.body; //Vas chercher l'usager
+    var trouvergooglecourriel = false;
+    var message = "";
+    console.log(usager);
+    MongoClient.connect(url, function (err, client) {
+        assert.strictEqual(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('usagers').findOne({googlecourriel: usager.googlecourriel}, function (err, result) {
+            if (err) return console.log(err)
+            console.log(result);
+            if (result){
+                trouvergooglecourriel = true;
+                console.log("Déjà ajouté");
+                message = "Déjà ajouté";
+                res.json(message);
+            }
+            else {
+                if (!usager.googlecourriel && !usager.nomusager) { //Vérifie si l'utilisateur a un courriel et un nomusager
+                    res.status(400);
+                    res.json({"erreur": "Données incorrectes"});
+                } else { //Si l'usager a tout les bons champs de remplis
+                    MongoClient.connect(url, function (err, client) {
+                        assert.strictEqual(null, err);
+                        console.log("Connexion au serveur réussie");
+                        const db = client.db(dbName);
+                        db.collection('usagers').insertOne(usager, function (err, result) { //Insert l'objet usager.
+                            if (err) return console.log(err)
+                            console.log("Objet ajouté");
+                            message = "Compte crée!";
+                            res.json(message)
+                        })
+                        client.close();
+                    });
+                }
+            }
+        })
+        client.close();
+    });
+
+});
+
+
+/**
+ * Retrouve tout les usagers de la base de donnée
+ */
+router.get('/googlecourriel/:googlecourriel', function (req, res, next) {
+    MongoClient.connect(url, function (err, client) {
+        assert.strictEqual(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('usagers').findOne({googlecourriel: req.params.googlecourriel}, function (err, result) {
+            if (err) return console.log(err)
+            console.log(result);
+            res.json(result);
+        })
+
+        client.close();
+    });
+});
 module.exports = router;
