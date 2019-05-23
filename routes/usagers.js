@@ -47,22 +47,35 @@ router.get('/:idUsager', function (req, res, next) {
 });
 
 /**
+ * Enregistre le nouveau usager via création d'un compte avec courriel
+ */
+router.post('/courriel/', function (req, res, next) {
+    var usager = req.body; //Vas chercher l'usager
+    console.log(usager);
+    if (!usager.courriel || !usager.motdepasse) { //Vérifie si l'utilisateur a un courriel ou un mot de passe
+        res.status(400);
+        res.json({"erreur": "Données incorrectes"});
+    } else { //Si l'usager a tout les bons champs de remplis
+        MongoClient.connect(url, function (err, client) {
+            assert.strictEqual(null, err);
+            console.log("Connexion au serveur réussie");
+            const db = client.db(dbName);
+            db.collection('usagers').insertOne(usager, function (err, result) { //Insert l'objet usager.
+                if (err) return console.log(err)
+                console.log("Objet ajouté");
+                res.json(result);
+            })
+            client.close();
+        });
+    }
+});
+
+/**
  * Enregistre le nouveau usager dans notre base de donnée
  */
 router.post('/', function (req, res, next) {
     var usager = req.body; //Vas chercher l'usager
     console.log(usager);
-
-    if (!usager.token) {
-
-    } else if (!usagre.googletoken) {
-
-    } else if (!usager.facebooktoken) {
-
-    } else {
-
-    }
-
     if (!usager.courriel || !usager.motdepasse) { //Vérifie si l'utilisateur a un courriel ou un mot de passe
         res.status(400);
         res.json({"erreur": "Données incorrectes"});
