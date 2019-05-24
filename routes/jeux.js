@@ -43,8 +43,8 @@ router.get('/', function(req, res, next) {
         assert.equal(null, err);
         console.log("Connexion au serveur réussie");
         const db = client.db(dbName);
+        //Va chercher les éléments de la collection score en ordre décroissant.
         db.collection('score').find().sort({score:-1}).toArray(function(err, result) {
-
             if (err) return console.log(err)
             console.log(result);
             res.json(result);
@@ -59,15 +59,15 @@ router.post('/score', function(req, res, next) {
     console.log("Ajouter un score");
     var objectScore = req.body;
     console.log(objectScore);
-    //TODO PARSE EN INT MON OBJET DE SCORE AVANT L'AJOUT
 
-    //Validation
+    //Valide s'il y a un object à ajouter ou non avant l'ajout.
     if(!objectScore.score){
         res.status(400);
         console.log('Valeur introuvable.');
         res.json({Erreur: "Vous n'avez entré aucune donnée pour spécifier le score."});
 
     } else{
+        //S'il y a un score à ajouté, connexion à la base de données et ajout en json.
         MongoClient.connect(url, function(err, client) {
             assert.equal(null, err);
             console.log("Connexion au serveur réussie");
