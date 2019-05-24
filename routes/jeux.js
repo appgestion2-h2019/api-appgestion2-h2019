@@ -37,7 +37,7 @@ router.put('/:idCategorie/mot', function (req, res, next) {
 
 /*------------ Lisa ------------*/
 
-// Requête pour l'affichage de tous les scores enregistrés dans la base de données.
+// Requête pour l'affichage de tous les scores enregistrés dans la base de données. test
 router.get('/', function(req, res, next) {
     MongoClient.connect(url, function(err, client) {
         assert.equal(null, err);
