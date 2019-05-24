@@ -27,15 +27,16 @@ router.get('/', function(req, res, next) {
     });
 });
 
-<<<<<<< HEAD
+//Debut Nicolas Lemay
+
 //Modification d'une categorie pour supprimer un mot
-router.put('/:idCategorie', function (req, res, next) {
+router.put('/:idCategorie/mot', function (req, res, next) {
     console.log('Suppression d\'un mot');
 
     var idCategorie = req.params.idCategorie;
     console.log(idCategorie);
 
-    var nomMot = req.body.nomMot;
+    var nomMot = req.body;
     console.log(nomMot);
 
     MongoClient.connect(url, function (err, client) {
@@ -52,7 +53,8 @@ router.put('/:idCategorie', function (req, res, next) {
     });
 });
 
-=======
+//Fin Nicolas Lemay
+
  //Ajouter un nouveau score dans la base de données.
 router.post('/score', function(req, res, next) {
     console.log("Ajouter un score");
@@ -81,7 +83,7 @@ router.post('/score', function(req, res, next) {
         });
     }
 });
->>>>>>> a5d75702e230094dcea87ed21ff132d1ce62c321
+
 
 /*------------ Sacha ------------*/
 
