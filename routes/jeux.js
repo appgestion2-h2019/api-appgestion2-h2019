@@ -7,26 +7,6 @@ const url = config.database.uri;
 const dbName = 'chickencoops';
 var ObjectId = require('mongodb').ObjectID;
 
-
-/*------------ Lisa ------------*/
-
-// Requête pour l'affichage de tous les scores enregistrés dans la base de données.
-router.get('/', function(req, res, next) {
-    MongoClient.connect(url, function(err, client) {
-        assert.equal(null, err);
-        console.log("Connexion au serveur réussie");
-        const db = client.db(dbName);
-        db.collection('score').find().sort({score:-1}).toArray(function(err, result) {
-
-            if (err) return console.log(err)
-            console.log(result);
-            res.json(result);
-        })
-
-        client.close();
-    });
-});
-
 //Debut Nicolas Lemay
 
 //Modification d'une categorie pour supprimer un mot
@@ -54,6 +34,25 @@ router.put('/:idCategorie/mot', function (req, res, next) {
 });
 
 //Fin Nicolas Lemay
+
+/*------------ Lisa ------------*/
+
+// Requête pour l'affichage de tous les scores enregistrés dans la base de données.
+router.get('/', function(req, res, next) {
+    MongoClient.connect(url, function(err, client) {
+        assert.equal(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('score').find().sort({score:-1}).toArray(function(err, result) {
+
+            if (err) return console.log(err)
+            console.log(result);
+            res.json(result);
+        })
+
+        client.close();
+    });
+});
 
  //Ajouter un nouveau score dans la base de données.
 router.post('/score', function(req, res, next) {
