@@ -9,6 +9,9 @@ const url = config.database.uri;
 const dbName = 'chickencoops';
 var ObjectId = require('mongodb').ObjectID;
 
+/*----------------------------------------*/
+/*---------Début section Dannick----------*/
+/*----------------------------------------*/
 /**
  * Retrouve tout les usagers de la base de donnée
  */
@@ -31,67 +34,100 @@ router.get('/', function (req, res, next) {
 /**
  * Retourve l'usager par son id
  */
-// router.get('/:idUsager', function (req, res, next) {
-//     MongoClient.connect(url, function (err, client) {
-//         assert.strictEqual(null, err);
-//         console.log("Connexion au serveur réussie");
-//         const db = client.db(dbName);
-//         db.collection('usagers').findOne({_id: ObjectId.createFromHexString(req.params.idUsager)}, function (err, result) {
-//             if (err) return console.log(err)
-//             console.log(result);
-//             res.json(result);
-//         })
-//
-//         client.close();
-//     });
-// });
+router.get('/:idUsager', function (req, res, next) {
+    MongoClient.connect(url, function (err, client) {
+        assert.strictEqual(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        db.collection('usagers').findOne({_id: ObjectId.createFromHexString(req.params.idUsager)}, function (err, result) {
+            if (err) return console.log(err)
+            console.log(result);
+            res.json(result);
+        })
+
+        client.close();
+    });
+});
 
 /**
  * Enregistre le nouveau usager via création d'un compte avec courriel
  */
-router.post('/courriel/', function (req, res, next) {
+router.post('/', function (req, res, next) {
     var usager = req.body; //Vas chercher l'usager
+    var trouvercourriel = false; // Cette variable servira à voir si un utilisateur utilise déjà ce courriel
+    var message = "";
     console.log(usager);
-    if (!usager.courriel || !usager.motdepasse) { //Vérifie si l'utilisateur a un courriel ou un mot de passe
-        res.status(400);
-        res.json({"erreur": "Données incorrectes"});
-    } else { //Si l'usager a tout les bons champs de remplis
-        MongoClient.connect(url, function (err, client) {
-            assert.strictEqual(null, err);
-            console.log("Connexion au serveur réussie");
-            const db = client.db(dbName);
-            db.collection('usagers').insertOne(usager, function (err, result) { //Insert l'objet usager.
-                if (err) return console.log(err)
-                console.log("Objet ajouté");
-                res.json(result);
-            })
-            client.close();
-        });
-    }
+    MongoClient.connect(url, function (err, client) {
+        assert.strictEqual(null, err); //Retourne l'erreur
+        console.log("Connexion au serveur réussie"); // Pour laisser des traçes
+        const db = client.db(dbName); // Pour ce faciliter la vie
+        db.collection('usagers').findOne({courriel: usager.courriel}, function (err, result) {
+            if (err) return console.log(err)
+            console.log(result);
+            if (result) {
+                trouvercourriel = true;
+                console.log("Déjà utilisé");
+                message = "Déjà utilisé";
+                res.json(message);
+            } else {
+                if (!usager.courriel && !usager.nomusager && !usager.motdepasse) { //Vérifie si l'utilisateur a un courriel, un nomusager et un mot de passe
+                    res.status(400);
+                    res.json({"erreur": "Données incorrectes"});
+                } else { //Si l'usager a tout les bons champs de remplis
+                    MongoClient.connect(url, function (err, client) {
+                        assert.strictEqual(null, err);
+                        console.log("Connexion au serveur réussie");
+                        const db = client.db(dbName);
+                        db.collection('usagers').insertOne(usager, function (err, result) { //Insert l'objet usager.
+                            if (err) return console.log(err)
+                            console.log("Objet ajouté");
+                            message = "Compte crée!";
+                            res.json(message)
+                        })
+                        client.close();
+                    });
+                }
+            }
+        })
+        client.close();
+    });
 });
 
 /**
- * Enregistre le nouveau usager dans notre base de donnée
+ * Vas voir dans la bd si l'utilisateur existe. Si les informations corresponde l'utilisateur seras connecté.
  */
-router.post('/', function (req, res, next) {
+router.post('/connexion/', function (req, res, next) {
     var usager = req.body; //Vas chercher l'usager
+    var connecter = false;
     console.log(usager);
-    if (!usager.courriel || !usager.motdepasse) { //Vérifie si l'utilisateur a un courriel ou un mot de passe
-        res.status(400);
-        res.json({"erreur": "Données incorrectes"});
-    } else { //Si l'usager a tout les bons champs de remplis
-        MongoClient.connect(url, function (err, client) {
-            assert.strictEqual(null, err);
-            console.log("Connexion au serveur réussie");
-            const db = client.db(dbName);
-            db.collection('usagers').insertOne(usager, function (err, result) { //Insert l'objet usager.
+    MongoClient.connect(url, function (err, client) {
+        assert.strictEqual(null, err); //Retourne l'erreur
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        if (usager.courriel && usager.motdepasse) {
+            db.collection('usagers').findOne({
+                courriel: usager.courriel,
+                motdepasse: usager.motdepasse
+            }, function (err, result) {
                 if (err) return console.log(err)
-                console.log("Objet ajouté");
-                res.json(result);
-            })
-            client.close();
-        });
-    }
+                console.log(result);
+                if (result) {
+                    console.log("Le clients est bien connecter!");
+                    connecter = true;
+                    res.json(result);
+                } else {
+                    console.log("Vous n'avez pas de compte");
+                    connecter = false;
+                    res.json(result);
+                }
+            });
+            client.close(); // Ferme la connexion a la base de données.
+        } else {
+            res.status(400);
+            res.json({"erreur": "Données incorrectes, vous avez oublier de remplir un champ du formulaire."});
+            client.close(); // Ferme la connexion a la base de données.
+        }
+    });
 });
 
 /**
@@ -113,32 +149,10 @@ router.delete('/:idUsager', function (req, res, next) {
     });
 });
 
-/**
- * Retrouve l'usager appartir de son id et le modifie
- * todo : retravailler cette fonction pour la mettre a jours avec le bon modèle de donné
- */
-//
-// router.put('/:idUsager', function (req, res, next) {
-//     var usager = req.body;
-//     if (!usager.titre || (!(usager.duree))) {
-//         res.status(400);
-//         res.json({"erreur": "Données incorrectes"});
-//     } else {
-//         MongoClient.connect(url, function (err, client) {
-//             assert.strictEqual(null, err);
-//             console.log("Connexion au serveur réussie");
-//             const db = client.db(dbName);
-//             db.collection('usagers').updateOne({_id: ObjectId.createFromHexString(req.params.idUsager)}, {$set: usager},
-//                 function (err, result) {
-//                     if (err) return console.log(err)
-//                     console.log("Objet mis à jour");
-//                     res.json(result);
-//                 })
-//
-//             client.close();
-//         });
-//     }
-// });
+/*----------------------------------------*/
+/*----------Fin section Dannick-----------*/
+/*----------------------------------------*/
+
 
 /*----------------------------------------*/
 /*-------------------- Matthew------------*/
@@ -158,13 +172,12 @@ router.post('/usagergoogle/', function (req, res, next) {
         db.collection('usagers').findOne({googlecourriel: usager.googlecourriel}, function (err, result) {
             if (err) return console.log(err)
             console.log(result);
-            if (result){
+            if (result) {
                 trouvergooglecourriel = true;
                 console.log("Déjà ajouté");
                 message = "Déjà ajouté";
                 res.json(message);
-            }
-            else {
+            } else {
                 if (!usager.googlecourriel && !usager.nomusager) { //Vérifie si l'utilisateur a un courriel et un nomusager
                     res.status(400);
                     res.json({"erreur": "Données incorrectes"});
