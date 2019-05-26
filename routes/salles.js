@@ -41,11 +41,11 @@ router.use(function(req, res, next) {
  var obtenirSalles = () => {
   return new Promise((resolve, reject) => {
 
-    MongoClient.connect(url, function (err, client) {
+    MongoClient.connect(url, { useNewUrlParser: true }, function (err, client) {
       if (err == null) {
 				const db = client.db(dbName);
 
-				db.collection("salles").find().toArray(function (erreur, salles) {
+          db.collection("salles").find().toArray(function (erreur, salles) {
 					client.close();
 					err ? reject(erreur) : resolve(salles);
 				});

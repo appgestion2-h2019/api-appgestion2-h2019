@@ -3,9 +3,11 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
+var bodyParser = require('body-parser');
 
 // Express 4.0
+var app = express();
+
 //ajout jp
 // app.use(bodyParser.json({ limit: '105mb' }));
 // app.use(bodyParser.urlencoded({ extended: true, limit: '105mb' }));
@@ -16,8 +18,6 @@ var usersRouter = require('./routes/users');
 var sallesRouter = require('./routes/salles');
 var pictosRouter = require('./routes/pictos');
 var jeuxRouter = require('./routes/jeux');
-
-var app = express();
 
 //Pour avoir accès à l'API à partir d'un autre domaine.
 app.use(function(req, res, next) {

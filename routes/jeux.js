@@ -7,35 +7,16 @@ const url = config.database.uri;
 const dbName = 'chickencoops';
 var ObjectId = require('mongodb').ObjectID;
 
-
-/*------------ Lisa ------------*/
-
-// Requête pour l'affichage de tous les scores enregistrés dans la base de données.
-router.get('/tableauscore', function(req, res, next) {
-    MongoClient.connect(url, function(err, client) {
-        assert.equal(null, err);
-        console.log("Connexion au serveur réussie");
-        const db = client.db(dbName);
-        db.collection('score').find().sort({score:-1}).toArray(function(err, result) {
-
-            if (err) return console.log(err)
-            console.log(result);
-            res.json(result);
-        })
-
-        client.close();
-    });
-});
-
+//Debut Nicolas Lemay
 
 //Modification d'une categorie pour supprimer un mot
-router.put('/:idCategorie', function (req, res, next) {
+router.put('/:idCategorie/mot', function (req, res, next) {
     console.log('Suppression d\'un mot');
 
     var idCategorie = req.params.idCategorie;
     console.log(idCategorie);
 
-    var nomMot = req.body.nomMot;
+    var nomMot = req.body;
     console.log(nomMot);
 
     MongoClient.connect(url, function (err, client) {
@@ -52,6 +33,26 @@ router.put('/:idCategorie', function (req, res, next) {
     });
 });
 
+//Fin Nicolas Lemay
+
+/*------------ Lisa ------------*/
+
+// Requête pour l'affichage de tous les scores enregistrés dans la base de données. test
+router.get('/', function(req, res, next) {
+    MongoClient.connect(url, function(err, client) {
+        assert.equal(null, err);
+        console.log("Connexion au serveur réussie");
+        const db = client.db(dbName);
+        //Va chercher les éléments de la collection score en ordre décroissant.
+        db.collection('score').find().sort({score:-1}).toArray(function(err, result) {
+            if (err) return console.log(err)
+            console.log(result);
+            res.json(result);
+        })
+
+        client.close();
+    });
+});
 
  //Ajouter un nouveau score dans la base de données.
 router.post('/score', function(req, res, next) {
@@ -59,13 +60,14 @@ router.post('/score', function(req, res, next) {
     var objectScore = req.body;
     console.log(objectScore);
 
-    //Validation
+    //Valide s'il y a un object à ajouter ou non avant l'ajout.
     if(!objectScore.score){
         res.status(400);
         console.log('Valeur introuvable.');
         res.json({Erreur: "Vous n'avez entré aucune donnée pour spécifier le score."});
 
     } else{
+        //S'il y a un score à ajouté, connexion à la base de données et ajout en json.
         MongoClient.connect(url, function(err, client) {
             assert.equal(null, err);
             console.log("Connexion au serveur réussie");
